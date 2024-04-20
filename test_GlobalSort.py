@@ -1,24 +1,8 @@
 import unittest
 import shutil
-import locale
 from pathlib import Path
-
-
-def get_system_language():
-    return locale.getlocale()[0]
-
-
-def sort_files(directory, extensions, create_dir):
-    for file in directory.iterdir():
-        if file.is_file():
-            extension = file.suffix
-            if extension in extensions:
-                destination_dir = directory / extensions[extension]
-                if not destination_dir.exists() and not create_dir:
-                    continue
-                destination_dir.mkdir(exist_ok=True)
-                destination = destination_dir / file.name
-                file.rename(destination)
+from src.utils import sort_files
+from src.language import os_language
 
 
 class TestSortFiles(unittest.TestCase):
@@ -42,7 +26,7 @@ class TestSortFiles(unittest.TestCase):
 
     def test_sort_files_existing_extension(self):
         # Call the function with the test directory and extension map
-        sort_files(self.test_dir, self.extensions, True)
+        sort_files(self.test_dir, self.extensions, True, True)
 
         # Check that the file has been moved to the correct directory
         self.assertTrue(
@@ -56,7 +40,7 @@ class TestSortFiles(unittest.TestCase):
 
     def test_sort_files_non_existing_extension(self):
         # Call the function with the test directory and extension map
-        sort_files(self.test_dir, self.extensions, True)
+        sort_files(self.test_dir, self.extensions, True, True)
 
         # Check that the file has been moved to the 'Divers' directory
         self.assertFalse(
@@ -70,7 +54,7 @@ class TestSortFiles(unittest.TestCase):
 
     def test_sort_files_no_create_dir(self):
         # Call the function with the test directory and extension map, but with create_dir set to False
-        sort_files(self.test_dir, self.extensions, False)
+        sort_files(self.test_dir, self.extensions, False, False)
 
         # Check that the file has not been moved
         self.assertTrue(
@@ -88,7 +72,7 @@ class TestSortFiles(unittest.TestCase):
         empty_dir.mkdir()
 
         # Call the function with the empty directory and extension map
-        sort_files(empty_dir, self.extensions, True)
+        sort_files(empty_dir, self.extensions, True, True)
 
         # Check that no new directories have been created
         self.assertEqual(
@@ -99,7 +83,7 @@ class TestSortFiles(unittest.TestCase):
 
     def test_system_language_detection(self):
         # Call the function to get the system language
-        lang = get_system_language()
+        lang = os_language
 
         # Check that the language is not None or empty
         self.assertIsNotNone(
@@ -111,6 +95,19 @@ class TestSortFiles(unittest.TestCase):
             "",
             "System language detection failed",
         )
+
+    def test_sort_files_nonexistent_directory(self):
+        # Define a path to a non-existent directory
+        non_existent_dir = self.test_dir / "non_existent_dir"
+
+        # Call the function with the non-existent directory and check the return value
+        sorted_flag, sorted_folders = sort_files(
+            non_existent_dir, self.extensions, True, True
+        )
+
+        # Assert that sorted_flag is False and sorted_folders is an empty set
+        self.assertFalse(sorted_flag)
+        self.assertEqual(sorted_folders, set())
 
 
 if __name__ == "__main__":
