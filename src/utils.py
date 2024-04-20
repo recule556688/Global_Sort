@@ -20,14 +20,19 @@ from .constants import (
 language_functions = LANGUAGE_FUNCTIONS.get(os_language, LANGUAGE_FUNCTIONS["en"])
 
 
-def sort_files(directory, extensions, sorted_flag):  # Add sorted as an argument
+def sort_files(
+    directory, extensions, sorted_flag, create_dir
+):  # Add create_dir as an argument
     sorted_folders = set()  # Set to keep track of the sorted folders
     if not directory.exists():
         return (
-            sorted_flag,
+            False,
             sorted_folders,
-        )  # Return sorted and sorted_folders if the directory does not exist
+        )  # Return False and sorted_folders if the directory does not exist
 
+    # Check if the directory exists
+    if not os.path.exists(directory):
+        raise FileNotFoundError(f"The directory {directory} does not exist.")
     files = [f for f in directory.iterdir() if f.is_file()]
     for file in files:
         dossier_cible = extensions.get(file.suffix.lower(), "Divers")
@@ -45,28 +50,33 @@ def sort_files(directory, extensions, sorted_flag):  # Add sorted as an argument
                     ),
                 )
             else:
-                try:
-                    dossier_cible_absolu.mkdir(parents=True, exist_ok=True)
-                    file.rename(fichier_cible)
-                    undo_stack.append((fichier_cible, file))
-                    sorted_flag = True  # Set the flag to True if a file has been moved
-                    sorted_folders.add(
-                        str(dossier_cible_absolu)
-                    )  # Add the folder to the sorted folders set
-                    print(
-                        f"{Fore.GREEN}{'Successfully moved ' + str(file) + ' to ' + str(dossier_cible_absolu).center(100)}{Style.RESET_ALL}"
-                    )  # Print a success message in green
-                    log_message(
-                        "info",
-                        messages["moved"].format(src=file, dst=dossier_cible_absolu),
-                    )
-                except Exception as e:
-                    print(
-                        f"Exception when moving file: {e}"
-                    )  # Print the exception if one is thrown
-                    log_message(
-                        "info", messages["error_moving"].format(file=file, error=e)
-                    )
+                if create_dir:  # Only move the file if create_dir is True
+                    try:
+                        dossier_cible_absolu.mkdir(parents=True, exist_ok=True)
+                        file.rename(fichier_cible)
+                        undo_stack.append((fichier_cible, file))
+                        sorted_flag = (
+                            True  # Set the flag to True if a file has been moved
+                        )
+                        sorted_folders.add(
+                            str(dossier_cible_absolu)
+                        )  # Add the folder to the sorted folders set
+                        print(
+                            f"{Fore.GREEN}{'Successfully moved ' + str(file) + ' to ' + str(dossier_cible_absolu).center(100)}{Style.RESET_ALL}"
+                        )  # Print a success message in green
+                        log_message(
+                            "info",
+                            messages["moved"].format(
+                                src=file, dst=dossier_cible_absolu
+                            ),
+                        )
+                    except Exception as e:
+                        print(
+                            f"Exception when moving file: {e}"
+                        )  # Print the exception if one is thrown
+                        log_message(
+                            "info", messages["error_moving"].format(file=file, error=e)
+                        )
 
     return sorted_flag, sorted_folders  # Return the sorted flag and the sorted folders
 
