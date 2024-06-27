@@ -171,15 +171,14 @@ LOG_MESSAGES = {  # Map log messages to the correct language
         "file_exists": "Файл {file} уже существует в {directory}",
     },
 }
-# Get the user's operating system language
+# Get the user's operating system language, safely handling None
 os_language = locale.getlocale()[0][:2] if locale.getlocale()[0] else "en"
 
-# Get the system language
-lang = locale.getlocale()[0].split("_")[0]
+# Safely get the system language, default to 'en' if locale.getlocale()[0] is None
+lang = locale.getlocale()[0].split("_")[0] if locale.getlocale()[0] else "en"
 
-# Get the correct log messages based on the OS language (default to English)
+# Safely get the correct log messages based on the OS language (default to English)
+messages = LOG_MESSAGES.get(os_language, LOG_MESSAGES["en"])
 
-messages = LOG_MESSAGES.get(locale.getlocale()[0][:2], LOG_MESSAGES["en"])
-# Get the correct directory names based on the OS language (default to English)
-
+# Safely get the correct directory names based on the system language (default to English)
 directories_name = DIRECTORY_NAMES.get(lang, DIRECTORY_NAMES["en"])
