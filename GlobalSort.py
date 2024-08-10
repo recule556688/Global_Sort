@@ -30,7 +30,32 @@ import subprocess
 import platform
 
 
-def update_program():  # Function to update the program
+def check_git_installed():
+    """Check if Git is installed and accessible in the system's PATH."""
+    try:
+        subprocess.check_output(["git", "--version"])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+    except FileNotFoundError:
+        return False
+
+
+def update_program():
+    if not check_git_installed():
+        print(Fore.RED + "-" * 100 + Style.RESET_ALL)
+        print(
+            Fore.RED
+            + "{}".format(
+                "Git is not installed or not found in PATH. Skipping update and continuing execution.".center(
+                    100
+                )
+            )
+            + Style.RESET_ALL
+        )
+        launch_program()  # Assuming this is your function to start the main program
+        return  # Exit the update function after launching the program
+
     try:
         # Get the path to the top-level directory of the current Git repository
         repo_path = (
@@ -43,12 +68,36 @@ def update_program():  # Function to update the program
         print(
             Fore.RED
             + "{}".format(
-                "Not in the Project Github repository. Skipping update and continuing execution.".center(100)
+                "Not in the Project Github repository. Skipping update and continuing execution.".center(
+                    100
+                )
             )
             + Style.RESET_ALL
         )
         launch_program()
+        return  # Exit the function after launching the program
+
     try:
+        # Check for uncommitted changes
+        uncommitted_changes = subprocess.check_output(
+            ["git", "-C", repo_path, "status", "--porcelain"]
+        ).strip()
+
+        if uncommitted_changes:
+            print(Fore.YELLOW + "-" * 100 + Style.RESET_ALL)
+            print(
+                Fore.YELLOW
+                + "{}".format(
+                    "Uncommitted changes detected. Please commit or stash your changes before updating.".center(
+                        100
+                    )
+                )
+                + Style.RESET_ALL
+            )
+            print(Fore.YELLOW + "-" * 100 + Style.RESET_ALL)
+            launch_program()
+            return
+
         # Fetch the latest changes from the remote repository
         subprocess.run(["git", "-C", repo_path, "fetch"], check=True)
 
@@ -60,24 +109,41 @@ def update_program():  # Function to update the program
         if diff_output:
             print("Updates are available. Do you want to update? (Y/n)")
             choice = input().lower()
-            if choice == "Y" or choice == "":
-                if platform.system() == "Windows":
-                    subprocess.check_call(["git", "-C", repo_path, "pull"])
-                else:
-                    subprocess.run(["git", "-C", repo_path, "pull"], check=True)
+            if choice in ["y", ""]:
+                try:
+                    if platform.system() == "Windows":
+                        subprocess.check_call(["git", "-C", repo_path, "pull"])
+                    else:
+                        subprocess.run(["git", "-C", repo_path, "pull"], check=True)
 
-                print(Fore.BLUE + "-" * 100 + Style.RESET_ALL)
-                print(
-                    Fore.BLUE
-                    + "{}".format(
-                        "The program has been updated. Please restart the program.".center(
-                            100
+                    print(Fore.BLUE + "-" * 100 + Style.RESET_ALL)
+                    print(
+                        Fore.BLUE
+                        + "{}".format(
+                            "The program has been updated. Please restart the program.".center(
+                                100
+                            )
                         )
+                        + Style.RESET_ALL
                     )
+                    print(Fore.BLUE + "-" * 100 + Style.RESET_ALL)
+                    sys.exit(0)
+
+                except subprocess.CalledProcessError as e:
+                    print(Fore.RED + f"Failed to pull updates: {e}" + Style.RESET_ALL)
+                    print(
+                        Fore.RED
+                        + "Please resolve any issues manually.".center(100)
+                        + Style.RESET_ALL
+                    )
+                    launch_program()
+            else:
+                print(
+                    Fore.YELLOW
+                    + "Update skipped by user.".center(100)
                     + Style.RESET_ALL
                 )
-                print(Fore.BLUE + "-" * 100 + Style.RESET_ALL)
-                sys.exit(0)
+                launch_program()
         else:
             print(Fore.GREEN + "-" * 100 + Style.RESET_ALL)
             print(Fore.GREEN + "No updates available.".center(100) + Style.RESET_ALL)
@@ -90,8 +156,18 @@ def update_program():  # Function to update the program
             print(Fore.GREEN + "-" * 100 + Style.RESET_ALL)
             launch_program()
 
+    except subprocess.CalledProcessError as e:
+        print(Fore.RED + f"Git operation failed: {e}" + Style.RESET_ALL)
+        print(
+            Fore.RED
+            + "Please check your network connection and Git configuration.".center(100)
+            + Style.RESET_ALL
+        )
+        launch_program()
+
     except Exception as e:
         print(Fore.RED + f"An error occurred: {e}" + Style.RESET_ALL)
+        launch_program()
 
 
 def main():  # Main function that runs the program
