@@ -2,9 +2,11 @@ import os
 import json
 from pathlib import Path
 from colorama import Fore, Style
-from .undo import undo_stack
+from .shared import undo_stack  # Updated import from shared.py
 from .language import messages, os_language, LANGUAGE_FUNCTIONS
 from .logger import log_message
+from collections import Counter
+import shutil
 from .constants import (
     EXTENSIONS_PERSONNALISER,
     EXTENSIONS_DOCUMENT,
@@ -20,65 +22,79 @@ from .constants import (
 language_functions = LANGUAGE_FUNCTIONS.get(os_language, LANGUAGE_FUNCTIONS["en"])
 
 
-def sort_files(
-    directory, extensions, sorted_flag, create_dir
-):  # Add create_dir as an argument
-    sorted_folders = set()  # Set to keep track of the sorted folders
-    if not directory.exists():
-        return (
-            False,
-            sorted_folders,
-        )  # Return False and sorted_folders if the directory does not exist
+def get_folder_category(folder_path, extensions):
+    file_types = []
 
-    # Check if the directory exists
-    if not os.path.exists(directory):
-        raise FileNotFoundError(f"The directory {directory} does not exist.")
+    # Traverse through the folder to identify file types
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            _, ext = os.path.splitext(file)
+            ext = (
+                ext.lower().strip()
+            )  # Normalize extension: lowercase and strip whitespace
+            if ext in extensions:
+                file_types.append(extensions[ext])
+
+    # Determine the most common category in the folder
+    if file_types:
+        most_common_category = Counter(file_types).most_common(1)[0][0]
+        return most_common_category
+    else:
+        return "Divers"  # Fallback if no known file types are found
+
+
+
+def move_file(file, target_directory):
+    try:
+        target_directory.mkdir(parents=True, exist_ok=True)
+        original_location = file.resolve()
+        shutil.move(str(file), str(target_directory / file.name))
+        undo_stack.append(
+            (target_directory / file.name, original_location)
+        )  # Track the operation
+    except Exception as e:
+        print(f"Exception when moving file: {e}")
+
+
+def move_folder(folder, target_directory):
+    try:
+        target_directory.mkdir(parents=True, exist_ok=True)
+        original_location = folder.resolve()
+        shutil.move(str(folder), str(target_directory / folder.name))
+        undo_stack.append(
+            (target_directory / folder.name, original_location)
+        )  # Track the operation
+    except Exception as e:
+        print(f"Exception when moving folder: {e}")
+
+
+def sort_directory(directory, extensions):
+    sorted_folders = set()
+
+    if not directory.exists():
+        return False, sorted_folders
+
+    # Sort individual files first
     files = [f for f in directory.iterdir() if f.is_file()]
     for file in files:
         dossier_cible = extensions.get(file.suffix.lower(), "Divers")
         dossier_cible_absolu = directory / dossier_cible
-        fichier_cible = dossier_cible_absolu / file.name
-        if (
-            file.parent != dossier_cible_absolu
-        ):  # Check if the file is not in the correct folder
-            if fichier_cible.exists():
-                print(f"File {fichier_cible} already exists in {dossier_cible_absolu}")
-                log_message(
-                    "info",
-                    messages["file_exists"].format(
-                        file=fichier_cible, directory=dossier_cible_absolu
-                    ),
-                )
-            else:
-                if create_dir:  # Only move the file if create_dir is True
-                    try:
-                        dossier_cible_absolu.mkdir(parents=True, exist_ok=True)
-                        file.rename(fichier_cible)
-                        undo_stack.append((fichier_cible, file))
-                        sorted_flag = (
-                            True  # Set the flag to True if a file has been moved
-                        )
-                        sorted_folders.add(
-                            str(dossier_cible_absolu)
-                        )  # Add the folder to the sorted folders set
-                        print(
-                            f"{Fore.GREEN}{'Successfully moved ' + str(file) + ' to ' + str(dossier_cible_absolu).center(100)}{Style.RESET_ALL}"
-                        )  # Print a success message in green
-                        log_message(
-                            "info",
-                            messages["moved"].format(
-                                src=file, dst=dossier_cible_absolu
-                            ),
-                        )
-                    except Exception as e:
-                        print(
-                            f"Exception when moving file: {e}"
-                        )  # Print the exception if one is thrown
-                        log_message(
-                            "info", messages["error_moving"].format(file=file, error=e)
-                        )
+        move_file(file, dossier_cible_absolu)
+        sorted_folders.add(str(dossier_cible_absolu))
 
-    return sorted_flag, sorted_folders  # Return the sorted flag and the sorted folders
+    # Now sort folders based on their individual contents
+    folders = [f for f in directory.iterdir() if f.is_dir()]
+    for folder in folders:
+        # Analyze the folder independently
+        category = get_folder_category(folder, extensions)
+        target_directory = directory / category
+
+        # Prevent moving a folder into itself or its own subfolder
+        if not str(target_directory).startswith(str(folder)):
+            move_folder(folder, target_directory)
+            sorted_folders.add(str(target_directory))
+
+    return True, sorted_folders
 
 
 def clear_console():  # Function to clear the console
