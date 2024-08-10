@@ -4,9 +4,7 @@ import shutil
 from .logger import log_message
 from .language import messages
 from colorama import Fore, Style
-
-
-undo_stack = []
+from .shared import undo_stack
 
 
 def undo_all_operations():  # Function to undo all operations
@@ -29,6 +27,7 @@ def undo_last_operation():  # Function to undo the last operation
             print(
                 f"{Fore.GREEN}{'Successfully moved ' + str(src) + ' back to ' + str(dst).center(100)}{Style.RESET_ALL}"
             )  # Print a success message in green
+            print(f"{Fore.BLUE}{'-' * 100}{Style.RESET_ALL}")
             log_message("info", messages["moved"].format(src=src, dst=dst))
         else:
             print(
@@ -40,4 +39,3 @@ def undo_last_operation():  # Function to undo the last operation
             f"{Fore.YELLOW}{messages['no_operation_to_cancel'].center(100)}{Style.RESET_ALL}"
         )  # Print a warning message in yellow
         log_message("info", messages["no_operation_to_cancel"])
-        return
