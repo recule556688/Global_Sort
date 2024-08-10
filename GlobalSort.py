@@ -14,7 +14,7 @@ from src.logger import setup_logging
 from src.menu import print_message
 from src.language import os_language, directories_name, messages, LANGUAGE_FUNCTIONS
 from src.utils import (
-    sort_files,
+    sort_directory,
     clear_console,
     ensure_extensions_file_exists,
     modify_extensions,
@@ -112,8 +112,8 @@ def main():  # Main function that runs the program
             print(Fore.BLUE + "-" * 100 + Style.RESET_ALL)
             continue
         if user_choice == "1":  # Sort music files
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Music"], EXTENSIONS_MUSIC, sorted_flag, True
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Music"], EXTENSIONS_MUSIC
             )
             clear_console()
             sorted_folders.update(new_folders)
@@ -139,8 +139,8 @@ def main():  # Main function that runs the program
                     + Style.RESET_ALL
                 )
         elif user_choice == "2":  # Sort video files
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Videos"], EXTENSIONS_VIDEO, sorted_flag, True
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Videos"], EXTENSIONS_VIDEO
             )
             clear_console()
             sorted_folders.update(new_folders)
@@ -166,8 +166,8 @@ def main():  # Main function that runs the program
                     + Style.RESET_ALL
                 )
         elif user_choice == "3":  # Sort image files
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Images"], EXTENSIONS_IMAGE, sorted_flag, True
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Images"], EXTENSIONS_IMAGE
             )
             clear_console()
             sorted_folders.update(new_folders)
@@ -193,11 +193,8 @@ def main():  # Main function that runs the program
                     + Style.RESET_ALL
                 )
         elif user_choice == "4":  # Sort document files
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Documents"],
-                EXTENSIONS_DOCUMENT,
-                sorted_flag,
-                True,
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Documents"], EXTENSIONS_DOCUMENT
             )
             clear_console()
             sorted_folders.update(new_folders)
@@ -223,11 +220,8 @@ def main():  # Main function that runs the program
                     + Style.RESET_ALL
                 )
         elif user_choice == "5":  # Sort download files
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Downloads"],
-                EXTENSIONS_DOWNLOAD,
-                sorted_flag,
-                True,
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Downloads"], EXTENSIONS_DOWNLOAD
             )
             clear_console()
             sorted_folders.update(new_folders)
@@ -273,9 +267,7 @@ def main():  # Main function that runs the program
                     )
                     print(Fore.BLUE + "{}".format("-" * 100) + Style.RESET_ALL)
                     return
-                sorted_flag, new_folders = sort_files(
-                    Custom_DIR, EXTENSIONS_DOWNLOAD, sorted_flag, True
-                )
+                sorted_flag, new_folders = sort_directory(Custom_DIR, EXTENSIONS_ALL)
                 clear_console()
                 sorted_folders.update(new_folders)
                 if sorted_flag:  # Only print if any file has been moved
@@ -302,34 +294,28 @@ def main():  # Main function that runs the program
             except Exception as e:
                 print(Fore.RED + f"An error occurred: {e}" + Style.RESET_ALL)
         elif user_choice == "7":  # Sort all the directories
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Music"], EXTENSIONS_MUSIC, sorted_flag, True
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Music"], EXTENSIONS_MUSIC
             )
             clear_console()
             sorted_folders.update(new_folders)
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Videos"], EXTENSIONS_VIDEO, sorted_flag, True
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Videos"], EXTENSIONS_VIDEO
             )
             clear_console()
             sorted_folders.update(new_folders)
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Images"], EXTENSIONS_IMAGE, sorted_flag, True
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Images"], EXTENSIONS_IMAGE
             )
             clear_console()
             sorted_folders.update(new_folders)
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Downloads"],
-                EXTENSIONS_DOWNLOAD,
-                sorted_flag,
-                True,
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Downloads"], EXTENSIONS_DOWNLOAD
             )
             clear_console()
             sorted_folders.update(new_folders)
-            sorted_flag, new_folders = sort_files(
-                Path.home() / directories_name["Documents"],
-                EXTENSIONS_DOCUMENT,
-                sorted_flag,
-                True,
+            sorted_flag, new_folders = sort_directory(
+                Path.home() / directories_name["Documents"], EXTENSIONS_DOCUMENT
             )
             clear_console()
             sorted_folders.update(new_folders)
@@ -341,11 +327,8 @@ def main():  # Main function that runs the program
             else:
                 for folder_name, folder_path in folder_paths.items():
                     if Path(folder_path).is_dir():
-                        sorted_flag, new_folders = sort_files(
-                            Path(folder_path),
-                            EXTENSIONS_ALL,
-                            sorted_flag,
-                            True,
+                        sorted_flag, new_folders = sort_directory(
+                            Path(folder_path), EXTENSIONS_ALL
                         )
                         clear_console()
                         sorted_folders.update(new_folders)
@@ -448,7 +431,6 @@ def main():  # Main function that runs the program
                 )
             print(Fore.BLUE + "-" * 100 + Style.RESET_ALL)
             sys.exit()
-
 
 def launch_program():
     ensure_log_file_exists()
