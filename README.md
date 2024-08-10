@@ -9,7 +9,7 @@
 
 ---
 
-### 🗂️ GlobalSort is a Python-based utility tool designed to organize files in your computer's directories...
+## 🗂️ GlobalSort is a Python-based utility tool designed to organize files in your computer's directories
 
 ## 📚 Table of Contents
 
@@ -19,7 +19,7 @@
 - [🔌 Supported Extensions](#-supported-extensions)
 - [🌍 Supported Languages](#-supported-languages)
 - [💿 Installation](#-installation)
-- [🖥️ Usage](#-usage)
+- [🖥️ Usage](#usage)
 - [📜 License](#-license)
 
 ## 📖 About
@@ -74,11 +74,17 @@
 
     .exe, .bat, .sh, .py, .pyw, .msi, .apk, .app, .deb, .rpm, .bin, .dmg, .run, .jar
 
-### 🛠️ And now custom extensions customisable by the user
+### 📂 And now folders customisable by the user
+
+- With the new update, you can now add your own folders to the program.
+
+  - To do so, simply select option `8` in the main menu and follow the instructions. You can add as many folders as you want and they will be saved in a file called "folders.json" in the "User_files" folder. The program will then read the file and add the folders to the list of folders to sort.
+
+### 🛠️ And now extensions customisable by the user
 
 - With the new update, you can now add your own extensions to the program.
 
-  - To do so, simply select option 9 in the main menu and follow the instructions. You can add as many extensions as you want and they will be saved in a file called "extensions.json" in the "User_files" folder. The program will then read the file and add the extensions to the list of extensions to sort.
+  - To do so, simply select option `9` in the main menu and follow the instructions. You can add as many extensions as you want and they will be saved in a file called "extensions.json" in the "User_files" folder. The program will then read the file and add the extensions to the list of extensions to sort.
 
 ## 🌍 Supported Languages
 
@@ -86,7 +92,7 @@
 
 #### the languages is automatically detected by the system and the program will display the language in the corresponding language your system is set to and if the language is not supported the program will display in English
 
-- 🇬🇧 English
+- us English
 - 🇫🇷 French
 - 🇪🇸 Spanish
 - 🇩🇪 German
@@ -98,7 +104,7 @@
 ### Prerequisites
 
 - You have installed [Git](https://git-scm.com/downloads).
-- You have installed Python 3.11.6. You can download it from the [official website](https://www.python.org/downloads/).
+- You have installed Python. You can download it from the [official website](https://www.python.org/downloads/).
 
 ### Installation Steps
 
@@ -114,23 +120,57 @@
     cd GlobalSort
     ```
 
-3. Install the required packages:
+3. Create a virtual environment:
+
+    ```bash
+    python -m venv venv
+    ```
+
+    - On Windows:
+
+        ```bash
+        .\venv\Scripts\activate
+        ```
+
+    - On MacOS and Linux:
+
+        ```bash
+        source venv/bin/activate
+        ```
+
+4. Install the required packages:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-4. Run the program:
+5. Run the program:
 
-    ```bash
+    ```py
     python GlobalSort.py
     ```
 
 ## 🖥️ Usage
 
-```py
-python GlobalSort.py
-```
+1. Run the program:
+
+    ```bash
+    python GlobalSort.py
+    ```
+
+2. Sorting Files:
+
+   - Select an option from the menu (e.g., `2` for sorting video files).
+   - The program will automatically move the files into the corresponding directories.
+
+3. Adding Custom Folders or Extensions:
+
+   - Use option `8` to add a new folder that you want to sort.
+   - Use option `9` to add a new file extension to be recognized by the program.
+
+4. Undoing Actions:
+
+   - If you need to revert the last sorting action, use option `10` to undo the changes.
 
 ![Usage Gif](./Assets/usage.gif)
 
